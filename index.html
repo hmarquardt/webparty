@@ -255,8 +255,8 @@
           <div class="note">
             <strong>How it works:</strong> this page opens your camera and microphone, connects to the signaling WebSocket, then forms peer-to-peer media connections with everyone in the room.
           </div>
-          <div class="warning">
-            Configure the signaling WebSocket URL in Admin / Config before joining. GitHub Pages hosts only this static page; Cloudflare Workers handles room signaling.
+          <div class="note">
+            This deployment is configured to use the Cloudflare signaling backend at browser-party-line-signaling.hmarquardt.workers.dev. GitHub Pages hosts only this static page; Cloudflare Workers handles room signaling.
           </div>
           <div class="participants" id="joinParticipants"></div>
         </div>
