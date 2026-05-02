@@ -398,6 +398,18 @@
   <div id="toasts" aria-live="polite"></div>
 
   <script>
+    function cloneData(value) {
+      if (typeof structuredClone === "function") return structuredClone(value);
+      return JSON.parse(JSON.stringify(value));
+    }
+
+    function createParticipantId() {
+      if (crypto.randomUUID) return crypto.randomUUID().replaceAll("-", "").slice(0, 16);
+      const bytes = new Uint8Array(12);
+      crypto.getRandomValues(bytes);
+      return [...bytes].map((byte) => byte.toString(16).padStart(2, "0")).join("").slice(0, 16);
+    }
+
     const DEFAULT_CONFIG = {
       signalingBase: "wss://browser-party-line-signaling.hmarquardt.workers.dev",
       maxRoomSize: 4,
@@ -420,8 +432,8 @@
     };
 
     const state = {
-      config: structuredClone(DEFAULT_CONFIG),
-      participantId: crypto.randomUUID().replaceAll("-", "").slice(0, 16),
+      config: cloneData(DEFAULT_CONFIG),
+      participantId: createParticipantId(),
       displayName: "",
       roomId: "",
       passphrase: "",
@@ -508,7 +520,7 @@
     function loadConfig() {
       const saved = localStorage.getItem("bpl-config-v3");
       if (saved) {
-        try { state.config = { ...structuredClone(DEFAULT_CONFIG), ...JSON.parse(saved) }; }
+        try { state.config = { ...cloneData(DEFAULT_CONFIG), ...JSON.parse(saved) }; }
         catch { logWarning("Could not parse saved config."); }
       }
       if (localStorage.getItem("bpl-theme") === "light") document.body.classList.add("light");
@@ -574,7 +586,7 @@
     }
 
     function resetConfig() {
-      state.config = structuredClone(DEFAULT_CONFIG);
+      state.config = cloneData(DEFAULT_CONFIG);
       state.audioOnly = state.config.audioOnly;
       state.cameraEnabled = !state.audioOnly;
       saveConfig();
@@ -591,7 +603,7 @@
       if (!text) return;
       try {
         const imported = JSON.parse(text);
-        state.config = { ...structuredClone(DEFAULT_CONFIG), ...imported };
+        state.config = { ...cloneData(DEFAULT_CONFIG), ...imported };
         saveConfig();
         syncConfigForm();
         showToast("Config imported.");
@@ -605,7 +617,7 @@
       localStorage.removeItem("bpl-config-v3");
       localStorage.removeItem("bpl-theme");
       localStorage.removeItem("bpl-last-name");
-      state.config = structuredClone(DEFAULT_CONFIG);
+      state.config = cloneData(DEFAULT_CONFIG);
       state.audioOnly = state.config.audioOnly;
       state.cameraEnabled = !state.audioOnly;
       document.body.classList.remove("light");
