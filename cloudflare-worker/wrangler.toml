@@ -1,0 +1,11 @@
+name = "browser-party-line-signaling"
+main = "worker.js"
+compatibility_date = "2026-05-02"
+
+[[durable_objects.bindings]]
+name = "PARTY_LINE_ROOM"
+class_name = "PartyLineRoom"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["PartyLineRoom"]

@@ -1,0 +1,1371 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Browser Party Line</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #090d13;
+      --bg2: #111827;
+      --panel: rgba(17, 24, 39, 0.78);
+      --panel2: rgba(9, 13, 19, 0.82);
+      --text: #edf7ff;
+      --muted: #9fb1c7;
+      --line: rgba(148, 163, 184, 0.24);
+      --cyan: #22d3ee;
+      --amber: #f59e0b;
+      --red: #fb7185;
+      --green: #34d399;
+      --shadow: 0 20px 70px rgba(0, 0, 0, 0.34);
+      --radius: 8px;
+    }
+    body.light {
+      color-scheme: light;
+      --bg: #f6f8fb;
+      --bg2: #e8eef5;
+      --panel: rgba(255, 255, 255, 0.86);
+      --panel2: rgba(246, 248, 251, 0.92);
+      --text: #111827;
+      --muted: #526175;
+      --line: rgba(71, 85, 105, 0.22);
+      --shadow: 0 16px 54px rgba(31, 41, 55, 0.16);
+    }
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 15% 0%, rgba(34, 211, 238, 0.18), transparent 30rem),
+        radial-gradient(circle at 88% 8%, rgba(245, 158, 11, 0.16), transparent 28rem),
+        linear-gradient(135deg, var(--bg), var(--bg2));
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      letter-spacing: 0;
+    }
+    button, input, textarea, select { font: inherit; }
+    button {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--text);
+      background: rgba(255,255,255,0.08);
+      min-height: 42px;
+      padding: 0.62rem 0.8rem;
+      cursor: pointer;
+    }
+    button:hover { border-color: var(--cyan); }
+    button:disabled { cursor: not-allowed; opacity: 0.48; }
+    .primary { background: linear-gradient(135deg, rgba(34,211,238,0.28), rgba(245,158,11,0.2)); border-color: rgba(34,211,238,0.5); }
+    .danger { border-color: rgba(251,113,133,0.5); color: #fecdd3; }
+    .ok { border-color: rgba(52,211,153,0.5); }
+    input, textarea, select {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      color: var(--text);
+      background: rgba(0,0,0,0.18);
+      padding: 0.72rem 0.78rem;
+      min-height: 42px;
+    }
+    body.light input, body.light textarea, body.light select { background: rgba(255,255,255,0.7); }
+    textarea { min-height: 110px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    label { display: grid; gap: 0.35rem; font-size: 0.92rem; color: var(--muted); }
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      backdrop-filter: blur(14px);
+      background: rgba(9,13,19,0.74);
+      border-bottom: 1px solid var(--line);
+    }
+    body.light header { background: rgba(246,248,251,0.78); }
+    .topbar {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0.9rem 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .brand { display: flex; align-items: center; gap: 0.75rem; min-width: 0; }
+    .logo {
+      width: 44px; height: 44px; border-radius: 8px;
+      display: grid; place-items: center;
+      background: linear-gradient(135deg, var(--cyan), var(--amber));
+      color: #061018; font-size: 1.55rem; box-shadow: var(--shadow);
+    }
+    h1 { margin: 0; font-size: clamp(1.15rem, 4vw, 1.7rem); line-height: 1.05; }
+    .sub { color: var(--muted); font-size: 0.88rem; margin-top: 0.15rem; }
+    .status-pill {
+      display: inline-flex; align-items: center; gap: 0.45rem;
+      border: 1px solid var(--line); border-radius: 999px;
+      padding: 0.45rem 0.65rem; color: var(--muted); background: rgba(255,255,255,0.06);
+      white-space: nowrap;
+    }
+    .dot { width: 0.7rem; height: 0.7rem; border-radius: 50%; background: var(--red); box-shadow: 0 0 0 3px rgba(251,113,133,0.15); }
+    .dot.ok { background: var(--green); box-shadow: 0 0 0 3px rgba(52,211,153,0.15); }
+    .dot.warn { background: var(--amber); box-shadow: 0 0 0 3px rgba(245,158,11,0.15); }
+    main { max-width: 1180px; margin: 0 auto; padding: 1rem; }
+    .tabs {
+      display: flex; gap: 0.45rem; overflow-x: auto; padding: 0.4rem;
+      border: 1px solid var(--line); border-radius: var(--radius);
+      background: rgba(255,255,255,0.05);
+    }
+    .tab { min-width: max-content; }
+    .tab[aria-selected="true"] { background: rgba(34,211,238,0.18); border-color: rgba(34,211,238,0.55); }
+    .panel {
+      display: none;
+      margin-top: 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+      padding: 1rem;
+    }
+    .panel.active { display: block; }
+    .grid { display: grid; gap: 1rem; }
+    .cols { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .three { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .actions { display: flex; flex-wrap: wrap; gap: 0.55rem; align-items: center; }
+    .note, .warning {
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 0.8rem;
+      color: var(--muted);
+      background: rgba(0,0,0,0.14);
+      line-height: 1.45;
+    }
+    .warning { border-color: rgba(245,158,11,0.45); color: #fcd9a4; }
+    body.light .warning { color: #7a4a00; }
+    .video-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+      gap: 0.8rem;
+      align-items: stretch;
+    }
+    .video-grid.compact { grid-template-columns: repeat(auto-fit, minmax(min(100%, 180px), 1fr)); gap: 0.5rem; }
+    .tile {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      min-height: 190px;
+      aspect-ratio: 4 / 3;
+      background: #05070b;
+    }
+    .tile video { width: 100%; height: 100%; object-fit: cover; display: block; background: #05070b; }
+    .tile audio { width: 100%; position: absolute; left: 0; bottom: 0; }
+    .tile .meta {
+      position: absolute; left: 0.55rem; right: 0.55rem; bottom: 0.55rem;
+      display: flex; justify-content: space-between; gap: 0.5rem; align-items: center;
+      background: rgba(0,0,0,0.52); border: 1px solid rgba(255,255,255,0.16);
+      border-radius: var(--radius); padding: 0.45rem 0.5rem; color: #fff;
+    }
+    .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 700; }
+    .badges { display: flex; gap: 0.35rem; white-space: nowrap; }
+    .badge { font-size: 0.78rem; border: 1px solid rgba(255,255,255,0.2); border-radius: 999px; padding: 0.12rem 0.35rem; }
+    .participants { display: grid; gap: 0.45rem; }
+    .participant-row {
+      display: grid; grid-template-columns: 1fr auto; gap: 0.6rem; align-items: center;
+      border: 1px solid var(--line); border-radius: var(--radius); padding: 0.65rem;
+      background: rgba(255,255,255,0.04);
+    }
+    .chat-log, .debug-log {
+      height: min(54vh, 520px);
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel2);
+      padding: 0.75rem;
+    }
+    .chat-line { margin: 0 0 0.65rem; line-height: 1.35; }
+    .chat-line .who { color: var(--cyan); font-weight: 700; }
+    .chat-line.system { color: var(--muted); font-style: italic; }
+    .debug-log pre { margin: 0 0 0.7rem; white-space: pre-wrap; word-break: break-word; color: var(--muted); }
+    .meter { display: inline-flex; align-items: center; gap: 0.25rem; }
+    .bar { width: 0.35rem; height: 0.65rem; background: var(--muted); opacity: 0.45; border-radius: 2px; }
+    .bar.on { background: var(--green); opacity: 1; }
+    #toasts { position: fixed; right: 1rem; bottom: 1rem; display: grid; gap: 0.55rem; z-index: 30; max-width: min(92vw, 420px); }
+    .toast { border: 1px solid var(--line); border-radius: var(--radius); padding: 0.75rem 0.85rem; background: var(--panel); box-shadow: var(--shadow); }
+    .hidden { display: none !important; }
+    .small { font-size: 0.86rem; color: var(--muted); }
+    .split { display: flex; justify-content: space-between; gap: 1rem; align-items: center; flex-wrap: wrap; }
+    @media (max-width: 760px) {
+      .cols, .three { grid-template-columns: 1fr; }
+      .topbar { align-items: flex-start; }
+      .status-pill { font-size: 0.82rem; }
+      button { width: 100%; }
+      .tabs button { width: auto; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="topbar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true">☎</div>
+        <div>
+          <h1>Browser Party Line</h1>
+          <div class="sub">Small-room WebRTC mesh chat with Cloudflare signaling</div>
+        </div>
+      </div>
+      <div class="actions">
+        <span class="status-pill" id="signalStatus"><span class="dot"></span><span>Not connected</span></span>
+        <button id="themeToggle" type="button">Light mode</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <nav class="tabs" role="tablist" aria-label="App sections">
+      <button class="tab" role="tab" aria-selected="true" aria-controls="joinPanel" data-tab="join">Join</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="roomPanel" data-tab="room">Room</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="chatPanel" data-tab="chat">Chat</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="adminPanel" data-tab="admin">Admin / Config</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="debugPanel" data-tab="debug">Debug</button>
+      <button class="tab" role="tab" aria-selected="false" aria-controls="helpPanel" data-tab="help">Help</button>
+    </nav>
+
+    <section class="panel active" id="joinPanel" role="tabpanel">
+      <div class="grid cols">
+        <div class="grid">
+          <label>Display name
+            <input id="displayName" autocomplete="name" maxlength="48" placeholder="Hank">
+          </label>
+          <label>Room name
+            <input id="roomName" maxlength="64" placeholder="amber-ferret-482">
+          </label>
+          <label>Room passphrase for future use
+            <input id="roomPassphrase" type="password" autocomplete="off" placeholder="Not used in v3">
+          </label>
+          <div class="actions">
+            <button id="randomRoomBtn" type="button">Create Random Room</button>
+            <button id="joinBtn" class="primary" type="button">Join Room</button>
+            <button id="copyInviteBtn" type="button">Copy Invite Link</button>
+          </div>
+          <div class="note">No accounts or passwords are required. Anyone with the invite link can join unless you add access control later.</div>
+        </div>
+        <div class="grid">
+          <div class="note">
+            <strong>How it works:</strong> this page opens your camera and microphone, connects to the signaling WebSocket, then forms peer-to-peer media connections with everyone in the room.
+          </div>
+          <div class="warning">
+            Configure the signaling WebSocket URL in Admin / Config before joining. GitHub Pages hosts only this static page; Cloudflare Workers handles room signaling.
+          </div>
+          <div class="participants" id="joinParticipants"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="roomPanel" role="tabpanel">
+      <div class="split">
+        <div>
+          <strong id="roomTitle">No room joined</strong>
+          <div class="small" id="roomSubtitle">Join a room to start.</div>
+        </div>
+        <div class="actions">
+          <button id="muteBtn" type="button">Mute microphone</button>
+          <button id="cameraBtn" type="button">Camera off</button>
+          <button id="shareBtn" type="button">Share screen</button>
+          <button id="stopShareBtn" type="button" disabled>Stop sharing</button>
+          <button id="audioOnlyBtn" type="button">Audio-only mode</button>
+          <button id="compactBtn" type="button">Compact layout</button>
+          <button id="copyInviteRoomBtn" type="button">Copy invite link</button>
+          <button id="leaveBtn" class="danger" type="button">Leave room</button>
+        </div>
+      </div>
+      <div class="video-grid" id="videoGrid" aria-live="polite"></div>
+    </section>
+
+    <section class="panel" id="chatPanel" role="tabpanel">
+      <div class="grid">
+        <div class="chat-log" id="chatLog" aria-live="polite"></div>
+        <div class="actions">
+          <label style="flex: 1 1 320px;">Message
+            <input id="chatInput" maxlength="2000" placeholder="Type a room message">
+          </label>
+          <button id="sendChatBtn" class="primary" type="button">Send</button>
+          <button id="copyChatBtn" type="button">Copy chat</button>
+          <button id="clearChatBtn" type="button">Clear local chat</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="adminPanel" role="tabpanel">
+      <div class="grid">
+        <div class="warning">TURN credentials saved here live in localStorage. A public static page cannot hide paid TURN credentials. Use short-lived TURN credentials from a trusted backend for production.</div>
+        <div class="grid cols">
+          <label>Signaling WebSocket URL base
+            <input id="cfgSignalBase" placeholder="wss://browser-party-line-signaling.YOUR_SUBDOMAIN.workers.dev">
+          </label>
+          <label>Max room size
+            <input id="cfgMaxRoom" type="number" min="2" max="6">
+          </label>
+          <label>Default video width
+            <input id="cfgWidth" type="number" min="160" max="1920">
+          </label>
+          <label>Default video height
+            <input id="cfgHeight" type="number" min="120" max="1080">
+          </label>
+          <label>Default frame rate
+            <input id="cfgFrameRate" type="number" min="1" max="60">
+          </label>
+          <label>Max outgoing peer connections
+            <input id="cfgMaxPeers" type="number" min="1" max="10">
+          </label>
+          <label>Warn when room size exceeds
+            <input id="cfgWarnAt" type="number" min="2" max="6">
+          </label>
+          <label>Auto-disable video when room reaches
+            <input id="cfgAutoVideoOffAt" type="number" min="2" max="6">
+          </label>
+          <label>Preferred camera device
+            <select id="cfgCamera"></select>
+          </label>
+          <label>Preferred microphone device
+            <select id="cfgMic"></select>
+          </label>
+        </div>
+        <div class="grid three">
+          <label><input id="cfgAudioOnly" type="checkbox"> Default audio-only mode</label>
+          <label><input id="cfgScreenShare" type="checkbox"> Enable screen share</label>
+          <label><input id="cfgChat" type="checkbox"> Enable chat</label>
+          <label><input id="cfgDebug" type="checkbox"> Enable debug logging</label>
+        </div>
+        <label>ICE servers JSON editor
+          <textarea id="cfgIce"></textarea>
+        </label>
+        <div class="grid cols">
+          <label>TURN URL
+            <input id="turnUrl" placeholder="turns:turn.example.com:5349">
+          </label>
+          <label>TURN username
+            <input id="turnUsername" autocomplete="off">
+          </label>
+          <label>TURN credential
+            <input id="turnCredential" type="password" autocomplete="off">
+          </label>
+          <div class="actions">
+            <button id="addTurnBtn" type="button">Add TURN server to ICE config</button>
+            <button id="clearTurnBtn" type="button">Clear TURN server</button>
+          </div>
+        </div>
+        <div class="actions">
+          <button id="saveConfigBtn" class="primary" type="button">Save config to localStorage</button>
+          <button id="resetConfigBtn" type="button">Reset config to defaults</button>
+          <button id="exportConfigBtn" type="button">Export config JSON</button>
+          <button id="importConfigBtn" type="button">Import config JSON</button>
+          <button id="clearDataBtn" class="danger" type="button">Clear all local app data</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel" id="debugPanel" role="tabpanel">
+      <div class="grid cols">
+        <div class="note" id="debugSummary"></div>
+        <div class="actions">
+          <button id="downloadDebugBtn" type="button">Download debug log JSON</button>
+          <button id="clearDebugBtn" type="button">Clear debug log</button>
+        </div>
+      </div>
+      <div class="debug-log" id="debugLog"></div>
+    </section>
+
+    <section class="panel" id="helpPanel" role="tabpanel">
+      <div class="grid">
+        <div class="note">
+          Browser Party Line is a small-room WebRTC mesh party line. GitHub Pages hosts this page, and a Cloudflare Worker with a Durable Object only coordinates room signaling.
+        </div>
+        <div class="note">
+          Video and audio usually flow browser-to-browser. TURN may relay media when direct peer-to-peer connection fails, which costs bandwidth money.
+        </div>
+        <div class="note">
+          Mesh does not scale well. Two people is easy. Three to four people is the intended range. Five to six may work but can get janky. Seven or more should use an SFU such as LiveKit, Jitsi, Janus, mediasoup, or Daily.
+        </div>
+        <div class="warning">
+          There are no accounts, no moderation system, no room passwords, and no authentication in v3. Anyone with the room link can join unless future access control is added.
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="toasts" aria-live="polite"></div>
+
+  <script>
+    const DEFAULT_CONFIG = {
+      signalingBase: "wss://browser-party-line-signaling.hmarquardt.workers.dev",
+      maxRoomSize: 4,
+      videoWidth: 640,
+      videoHeight: 480,
+      frameRate: 24,
+      audioOnly: false,
+      maxOutgoingPeerConnections: 5,
+      enableScreenShare: true,
+      enableChat: true,
+      enableDebug: false,
+      warnWhenRoomSizeExceeds: 4,
+      autoDisableVideoAt: 5,
+      preferredCameraDevice: "",
+      preferredMicDevice: "",
+      iceServers: [
+        { urls: "stun:stun.l.google.com:19302" },
+        { urls: "stun:stun1.l.google.com:19302" }
+      ]
+    };
+
+    const state = {
+      config: structuredClone(DEFAULT_CONFIG),
+      participantId: crypto.randomUUID().replaceAll("-", "").slice(0, 16),
+      displayName: "",
+      roomId: "",
+      passphrase: "",
+      ws: null,
+      wsStatus: "disconnected",
+      reconnectAttempts: 0,
+      shouldReconnect: false,
+      localStream: null,
+      cameraTrack: null,
+      screenTrack: null,
+      audioEnabled: true,
+      cameraEnabled: true,
+      screenSharing: false,
+      compact: false,
+      audioOnly: false,
+      participants: new Map(),
+      peerConnections: new Map(),
+      remoteStreams: new Map(),
+      chat: [],
+      events: [],
+      warnings: [],
+      stats: {}
+    };
+
+    const $ = (id) => document.getElementById(id);
+
+    function initApp() {
+      loadConfig();
+      parseUrlParams();
+      bindEvents();
+      syncConfigForm();
+      enumerateDevices();
+      renderVideoGrid();
+      renderChat();
+      updateStatus();
+      updateDebug();
+      setInterval(updatePeerStats, 5000);
+    }
+
+    function bindEvents() {
+      document.querySelectorAll(".tab").forEach((tab) => tab.addEventListener("click", () => selectTab(tab.dataset.tab)));
+      $("themeToggle").addEventListener("click", toggleTheme);
+      $("randomRoomBtn").addEventListener("click", () => { $("roomName").value = createRandomRoomName(); updateInviteUrl(); });
+      $("joinBtn").addEventListener("click", joinRoom);
+      $("copyInviteBtn").addEventListener("click", copyInviteLink);
+      $("copyInviteRoomBtn").addEventListener("click", copyInviteLink);
+      $("leaveBtn").addEventListener("click", leaveRoom);
+      $("muteBtn").addEventListener("click", toggleMic);
+      $("cameraBtn").addEventListener("click", toggleCamera);
+      $("shareBtn").addEventListener("click", startScreenShare);
+      $("stopShareBtn").addEventListener("click", stopScreenShare);
+      $("compactBtn").addEventListener("click", () => { state.compact = !state.compact; renderVideoGrid(); });
+      $("audioOnlyBtn").addEventListener("click", toggleAudioOnly);
+      $("sendChatBtn").addEventListener("click", sendChatMessage);
+      $("chatInput").addEventListener("keydown", (event) => { if (event.key === "Enter") sendChatMessage(); });
+      $("copyChatBtn").addEventListener("click", copyChat);
+      $("clearChatBtn").addEventListener("click", () => { state.chat = []; renderChat(); });
+      $("saveConfigBtn").addEventListener("click", saveConfigFromForm);
+      $("resetConfigBtn").addEventListener("click", resetConfig);
+      $("exportConfigBtn").addEventListener("click", exportConfig);
+      $("importConfigBtn").addEventListener("click", importConfig);
+      $("clearDataBtn").addEventListener("click", clearAllLocalData);
+      $("addTurnBtn").addEventListener("click", addTurnServer);
+      $("clearTurnBtn").addEventListener("click", clearTurnServer);
+      $("downloadDebugBtn").addEventListener("click", downloadDebugLog);
+      $("clearDebugBtn").addEventListener("click", () => { state.events = []; state.warnings = []; updateDebug(); });
+      $("roomName").addEventListener("input", updateInviteUrl);
+      $("displayName").addEventListener("input", updateInviteUrl);
+      window.addEventListener("beforeunload", () => leaveRoom(false));
+    }
+
+    function selectTab(name) {
+      document.querySelectorAll(".tab").forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.tab === name)));
+      document.querySelectorAll(".panel").forEach((panel) => panel.classList.remove("active"));
+      $(`${name}Panel`).classList.add("active");
+    }
+
+    function toggleTheme() {
+      document.body.classList.toggle("light");
+      $("themeToggle").textContent = document.body.classList.contains("light") ? "Dark mode" : "Light mode";
+      localStorage.setItem("bpl-theme", document.body.classList.contains("light") ? "light" : "dark");
+    }
+
+    function loadConfig() {
+      const saved = localStorage.getItem("bpl-config-v3");
+      if (saved) {
+        try { state.config = { ...structuredClone(DEFAULT_CONFIG), ...JSON.parse(saved) }; }
+        catch { logWarning("Could not parse saved config."); }
+      }
+      if (localStorage.getItem("bpl-theme") === "light") document.body.classList.add("light");
+      $("themeToggle").textContent = document.body.classList.contains("light") ? "Dark mode" : "Light mode";
+      state.audioOnly = Boolean(state.config.audioOnly);
+      state.cameraEnabled = !state.audioOnly;
+    }
+
+    function syncConfigForm() {
+      $("cfgSignalBase").value = state.config.signalingBase;
+      $("cfgMaxRoom").value = state.config.maxRoomSize;
+      $("cfgWidth").value = state.config.videoWidth;
+      $("cfgHeight").value = state.config.videoHeight;
+      $("cfgFrameRate").value = state.config.frameRate;
+      $("cfgMaxPeers").value = state.config.maxOutgoingPeerConnections;
+      $("cfgWarnAt").value = state.config.warnWhenRoomSizeExceeds;
+      $("cfgAutoVideoOffAt").value = state.config.autoDisableVideoAt;
+      $("cfgAudioOnly").checked = state.config.audioOnly;
+      $("cfgScreenShare").checked = state.config.enableScreenShare;
+      $("cfgChat").checked = state.config.enableChat;
+      $("cfgDebug").checked = state.config.enableDebug;
+      $("cfgIce").value = JSON.stringify(state.config.iceServers, null, 2);
+      $("shareBtn").disabled = !state.config.enableScreenShare;
+      $("sendChatBtn").disabled = !state.config.enableChat;
+    }
+
+    function saveConfigFromForm() {
+      let iceServers;
+      try {
+        iceServers = JSON.parse($("cfgIce").value);
+        if (!Array.isArray(iceServers)) throw new Error("ICE config must be an array.");
+      } catch (error) {
+        showToast("ICE servers JSON is invalid.");
+        logWarning(error.message);
+        return;
+      }
+      state.config = {
+        signalingBase: $("cfgSignalBase").value.trim().replace(/\/+$/, ""),
+        maxRoomSize: clampNumber($("cfgMaxRoom").value, 2, 6, 4),
+        videoWidth: clampNumber($("cfgWidth").value, 160, 1920, 640),
+        videoHeight: clampNumber($("cfgHeight").value, 120, 1080, 480),
+        frameRate: clampNumber($("cfgFrameRate").value, 1, 60, 24),
+        audioOnly: $("cfgAudioOnly").checked,
+        maxOutgoingPeerConnections: clampNumber($("cfgMaxPeers").value, 1, 10, 5),
+        enableScreenShare: $("cfgScreenShare").checked,
+        enableChat: $("cfgChat").checked,
+        enableDebug: $("cfgDebug").checked,
+        warnWhenRoomSizeExceeds: clampNumber($("cfgWarnAt").value, 2, 6, 4),
+        autoDisableVideoAt: clampNumber($("cfgAutoVideoOffAt").value, 2, 6, 5),
+        preferredCameraDevice: $("cfgCamera").value,
+        preferredMicDevice: $("cfgMic").value,
+        iceServers
+      };
+      localStorage.setItem("bpl-config-v3", JSON.stringify(state.config));
+      state.audioOnly = state.config.audioOnly;
+      state.cameraEnabled = !state.audioOnly;
+      syncConfigForm();
+      showToast("Config saved.");
+    }
+
+    function saveConfig() {
+      localStorage.setItem("bpl-config-v3", JSON.stringify(state.config));
+    }
+
+    function resetConfig() {
+      state.config = structuredClone(DEFAULT_CONFIG);
+      state.audioOnly = state.config.audioOnly;
+      state.cameraEnabled = !state.audioOnly;
+      saveConfig();
+      syncConfigForm();
+      showToast("Config reset.");
+    }
+
+    function exportConfig() {
+      downloadJson("browser-party-line-config.json", state.config);
+    }
+
+    async function importConfig() {
+      const text = prompt("Paste config JSON:");
+      if (!text) return;
+      try {
+        const imported = JSON.parse(text);
+        state.config = { ...structuredClone(DEFAULT_CONFIG), ...imported };
+        saveConfig();
+        syncConfigForm();
+        showToast("Config imported.");
+      } catch {
+        showToast("Could not import config JSON.");
+      }
+    }
+
+    function clearAllLocalData() {
+      if (!confirm("Clear all Browser Party Line localStorage data on this browser?")) return;
+      localStorage.removeItem("bpl-config-v3");
+      localStorage.removeItem("bpl-theme");
+      localStorage.removeItem("bpl-last-name");
+      state.config = structuredClone(DEFAULT_CONFIG);
+      state.audioOnly = state.config.audioOnly;
+      state.cameraEnabled = !state.audioOnly;
+      document.body.classList.remove("light");
+      syncConfigForm();
+      showToast("Local app data cleared.");
+    }
+
+    function parseUrlParams() {
+      const params = new URLSearchParams(location.search);
+      $("roomName").value = params.get("room") || "";
+      $("displayName").value = params.get("name") || localStorage.getItem("bpl-last-name") || "";
+      updateInviteUrl();
+    }
+
+    function createRandomRoomName() {
+      const adjectives = ["amber", "cosmic", "neon", "velvet", "silver", "lucky", "midnight", "sunny", "radio", "electric"];
+      const nouns = ["ferret", "otter", "possum", "switchboard", "comet", "jukebox", "signal", "booth", "orbit", "ticker"];
+      return `${pick(adjectives)}-${pick(nouns)}-${Math.floor(100 + Math.random() * 900)}`;
+    }
+
+    async function joinRoom() {
+      if (state.ws || state.localStream) await leaveRoom(false);
+      state.displayName = $("displayName").value.trim() || "Guest";
+      state.roomId = sanitizeRoom($("roomName").value.trim() || createRandomRoomName());
+      state.passphrase = $("roomPassphrase").value;
+      $("roomName").value = state.roomId;
+      localStorage.setItem("bpl-last-name", state.displayName);
+      updateInviteUrl();
+
+      if (!state.config.signalingBase || state.config.signalingBase.includes("YOUR_SUBDOMAIN")) {
+        showToast("Set your signaling WebSocket URL in Admin / Config first.");
+        selectTab("admin");
+        return;
+      }
+
+      try {
+        await startLocalMedia();
+        connectSignaling();
+        selectTab("room");
+      } catch (error) {
+        logWarning(error.message);
+        showToast("Could not start camera or microphone.");
+      }
+    }
+
+    async function leaveRoom(reRender = true) {
+      state.shouldReconnect = false;
+      if (state.ws) {
+        try { state.ws.close(1000, "leaving"); } catch {}
+      }
+      state.ws = null;
+      for (const id of [...state.peerConnections.keys()]) closePeerConnection(id);
+      stopLocalMedia();
+      state.participants.clear();
+      state.remoteStreams.clear();
+      state.wsStatus = "disconnected";
+      if (state.roomId) addChatMessage("system", "You left the room.");
+      state.roomId = "";
+      if (reRender) {
+        renderVideoGrid();
+        updateParticipantList();
+        updateStatus();
+        updateDebug();
+      }
+    }
+
+    function connectSignaling() {
+      const base = state.config.signalingBase.replace(/^http:/, "ws:").replace(/^https:/, "wss:").replace(/\/+$/, "");
+      const url = `${base}/room/${encodeURIComponent(state.roomId)}`;
+      state.shouldReconnect = true;
+      state.wsStatus = "connecting";
+      updateStatus();
+      logDebugEvent("ws-connect", { url });
+
+      const ws = new WebSocket(url);
+      state.ws = ws;
+
+      ws.addEventListener("open", () => {
+        state.wsStatus = "connected";
+        state.reconnectAttempts = 0;
+        updateStatus();
+        sendSignal({
+          type: "join",
+          participantId: state.participantId,
+          displayName: state.displayName,
+          status: currentStatus()
+        });
+      });
+      ws.addEventListener("message", (event) => handleSignalMessage(event.data));
+      ws.addEventListener("close", (event) => {
+        logWarning(`WebSocket closed: ${event.code} ${event.reason || ""}`.trim());
+        if (state.ws === ws) state.ws = null;
+        state.wsStatus = "disconnected";
+        updateStatus();
+        if (state.shouldReconnect && event.code !== 4008) scheduleReconnect();
+      });
+      ws.addEventListener("error", () => {
+        state.wsStatus = "error";
+        logWarning("WebSocket error.");
+        updateStatus();
+      });
+    }
+
+    function scheduleReconnect() {
+      if (state.reconnectAttempts >= 5) {
+        showToast("Signaling disconnected. Reconnect limit reached.");
+        return;
+      }
+      state.reconnectAttempts += 1;
+      const delay = Math.min(8000, 750 * state.reconnectAttempts ** 2);
+      showToast(`Signaling disconnected. Reconnecting in ${Math.round(delay / 1000)}s.`);
+      setTimeout(() => {
+        if (state.shouldReconnect && !state.ws && state.roomId) connectSignaling();
+      }, delay);
+    }
+
+    function sendSignal(message) {
+      if (!state.ws || state.ws.readyState !== WebSocket.OPEN) {
+        logWarning(`Signal not sent, socket unavailable: ${message.type}`);
+        return false;
+      }
+      state.ws.send(JSON.stringify(message));
+      logDebugEvent("signal-out", scrubSignal(message));
+      return true;
+    }
+
+    async function handleSignalMessage(raw) {
+      let message;
+      try { message = JSON.parse(raw); }
+      catch { logWarning("Invalid signaling JSON received."); return; }
+      logDebugEvent("signal-in", scrubSignal(message));
+
+      switch (message.type) {
+        case "hello":
+        case "heartbeat":
+          if (message.type === "heartbeat") sendSignal({ type: "heartbeat", t: Date.now() });
+          break;
+        case "joined":
+          mergeParticipants(message.participants || []);
+          addChatMessage("system", `You joined ${state.roomId}.`);
+          break;
+        case "participant-list":
+          mergeParticipants(message.participants || []);
+          break;
+        case "participant-joined":
+          if (message.participant?.participantId !== state.participantId) {
+            state.participants.set(message.participant.participantId, message.participant);
+            addChatMessage("system", `${message.participant.displayName} joined.`);
+            await createOfferForParticipant(message.participant.participantId);
+          }
+          updateParticipantList();
+          renderVideoGrid();
+          break;
+        case "participant-left":
+          handleParticipantLeft(message.participantId);
+          break;
+        case "participant-status":
+          if (message.status?.participantId) state.participants.set(message.status.participantId, message.status);
+          updateParticipantList();
+          renderVideoGrid();
+          break;
+        case "offer":
+          await handleOffer(message);
+          break;
+        case "answer":
+          await handleAnswer(message);
+          break;
+        case "ice-candidate":
+          await handleIceCandidate(message);
+          break;
+        case "chat":
+          addChatMessage(message.from, message.text, message.sentAt);
+          break;
+        case "room-full":
+          showToast(`Room is full. Max ${message.maxParticipants || state.config.maxRoomSize} participants.`);
+          await leaveRoom();
+          break;
+        case "error":
+          logWarning(`Signaling error: ${message.error}`);
+          showToast(`Signaling error: ${message.error}`);
+          break;
+        default:
+          logWarning(`Unknown signaling message: ${message.type}`);
+      }
+      updateDebug();
+    }
+
+    function mergeParticipants(participants) {
+      state.participants.clear();
+      for (const participant of participants) state.participants.set(participant.participantId, participant);
+      if (!state.participants.has(state.participantId) && state.roomId) {
+        state.participants.set(state.participantId, {
+          participantId: state.participantId,
+          displayName: state.displayName,
+          ...currentStatus()
+        });
+      }
+      const remoteIds = [...state.participants.keys()].filter((id) => id !== state.participantId);
+      for (const id of [...state.peerConnections.keys()]) {
+        if (!remoteIds.includes(id)) closePeerConnection(id);
+      }
+      updateParticipantList();
+      renderVideoGrid();
+    }
+
+    async function startLocalMedia() {
+      stopLocalMedia();
+      const constraints = applyMediaConstraints();
+      state.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      state.cameraTrack = state.localStream.getVideoTracks()[0] || null;
+      state.audioEnabled = Boolean(state.localStream.getAudioTracks()[0]?.enabled ?? true);
+      state.cameraEnabled = Boolean(state.cameraTrack && !state.audioOnly);
+      renderVideoGrid();
+      await enumerateDevices();
+    }
+
+    function stopLocalMedia() {
+      if (state.localStream) state.localStream.getTracks().forEach((track) => track.stop());
+      if (state.screenTrack) state.screenTrack.stop();
+      state.localStream = null;
+      state.cameraTrack = null;
+      state.screenTrack = null;
+      state.screenSharing = false;
+    }
+
+    function applyMediaConstraints() {
+      const audio = {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      };
+      if (state.config.preferredMicDevice) audio.deviceId = { exact: state.config.preferredMicDevice };
+      let video = false;
+      if (!state.audioOnly) {
+        video = {
+          width: { ideal: state.config.videoWidth },
+          height: { ideal: state.config.videoHeight },
+          frameRate: { ideal: state.config.frameRate, max: state.config.frameRate }
+        };
+        if (state.config.preferredCameraDevice) video.deviceId = { exact: state.config.preferredCameraDevice };
+      }
+      return { audio, video };
+    }
+
+    async function enumerateDevices() {
+      if (!navigator.mediaDevices?.enumerateDevices) return;
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        fillDeviceSelect("cfgCamera", devices.filter((d) => d.kind === "videoinput"), state.config.preferredCameraDevice);
+        fillDeviceSelect("cfgMic", devices.filter((d) => d.kind === "audioinput"), state.config.preferredMicDevice);
+      } catch (error) {
+        logWarning(`Device enumeration failed: ${error.message}`);
+      }
+    }
+
+    function fillDeviceSelect(id, devices, selected) {
+      const select = $(id);
+      const current = select.value || selected || "";
+      select.innerHTML = '<option value="">Browser default</option>';
+      devices.forEach((device, index) => {
+        const option = document.createElement("option");
+        option.value = device.deviceId;
+        option.textContent = device.label || `${device.kind} ${index + 1}`;
+        select.append(option);
+      });
+      select.value = current;
+    }
+
+    function createPeerConnection(remoteParticipantId) {
+      if (state.peerConnections.has(remoteParticipantId)) return state.peerConnections.get(remoteParticipantId);
+      if (state.peerConnections.size >= state.config.maxOutgoingPeerConnections) {
+        logWarning("Max outgoing peer connections reached.");
+        return null;
+      }
+      const pc = new RTCPeerConnection({ iceServers: state.config.iceServers });
+      state.peerConnections.set(remoteParticipantId, pc);
+      state.remoteStreams.set(remoteParticipantId, new MediaStream());
+
+      addLocalTracksToPeerConnection(pc);
+
+      pc.addEventListener("icecandidate", (event) => {
+        if (event.candidate) {
+          sendSignal({
+            type: "ice-candidate",
+            to: remoteParticipantId,
+            from: state.participantId,
+            candidate: event.candidate.toJSON()
+          });
+        }
+      });
+      pc.addEventListener("track", (event) => {
+        const stream = state.remoteStreams.get(remoteParticipantId) || new MediaStream();
+        event.streams[0]?.getTracks().forEach((track) => {
+          if (!stream.getTracks().some((existing) => existing.id === track.id)) stream.addTrack(track);
+        });
+        state.remoteStreams.set(remoteParticipantId, stream);
+        renderVideoGrid();
+      });
+      ["connectionstatechange", "iceconnectionstatechange", "icegatheringstatechange", "signalingstatechange"].forEach((name) => {
+        pc.addEventListener(name, () => {
+          if (pc.connectionState === "failed" || pc.iceConnectionState === "failed") {
+            addChatMessage("system", `Connection failed with ${participantName(remoteParticipantId)}.`);
+          }
+          updateDebug();
+        });
+      });
+      return pc;
+    }
+
+    function closePeerConnection(remoteParticipantId) {
+      const pc = state.peerConnections.get(remoteParticipantId);
+      if (pc) pc.close();
+      state.peerConnections.delete(remoteParticipantId);
+      state.remoteStreams.delete(remoteParticipantId);
+    }
+
+    async function createOfferForParticipant(remoteParticipantId) {
+      if (!state.localStream || remoteParticipantId === state.participantId) return;
+      const pc = createPeerConnection(remoteParticipantId);
+      if (!pc) return;
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      sendSignal({ type: "offer", to: remoteParticipantId, from: state.participantId, sdp: pc.localDescription });
+    }
+
+    async function handleOffer(message) {
+      const pc = createPeerConnection(message.from);
+      if (!pc) return;
+      await pc.setRemoteDescription(new RTCSessionDescription(message.sdp));
+      const answer = await pc.createAnswer();
+      await pc.setLocalDescription(answer);
+      sendSignal({ type: "answer", to: message.from, from: state.participantId, sdp: pc.localDescription });
+    }
+
+    async function handleAnswer(message) {
+      const pc = state.peerConnections.get(message.from);
+      if (!pc || pc.signalingState === "stable") return;
+      await pc.setRemoteDescription(new RTCSessionDescription(message.sdp));
+    }
+
+    async function handleIceCandidate(message) {
+      const pc = createPeerConnection(message.from);
+      if (!pc || !message.candidate) return;
+      try {
+        await pc.addIceCandidate(new RTCIceCandidate(message.candidate));
+      } catch (error) {
+        logWarning(`ICE candidate failed: ${error.message}`);
+      }
+    }
+
+    function addLocalTracksToPeerConnection(pc) {
+      if (!state.localStream) return;
+      state.localStream.getTracks().forEach((track) => pc.addTrack(track, state.localStream));
+      if (!state.localStream.getVideoTracks().length) pc.addTransceiver("video", { direction: "sendrecv" });
+    }
+
+    async function replaceOutgoingTrack(kind, track) {
+      for (const pc of state.peerConnections.values()) {
+        let sender = pc.getSenders().find((candidate) => candidate.track?.kind === kind);
+        if (!sender && kind === "video") {
+          sender = pc.getSenders().find((candidate) => !candidate.track);
+        }
+        if (!sender && track) {
+          sender = pc.addTrack(track, state.localStream || new MediaStream([track]));
+        }
+        if (sender) await sender.replaceTrack(track);
+      }
+    }
+
+    function toggleMic() {
+      const track = state.localStream?.getAudioTracks()[0];
+      if (!track) return;
+      track.enabled = !track.enabled;
+      state.audioEnabled = track.enabled;
+      sendStatus();
+      renderVideoGrid();
+    }
+
+    async function toggleCamera() {
+      if (state.cameraEnabled) {
+        state.cameraEnabled = false;
+        state.cameraTrack?.stop();
+        removeLocalVideoTracks();
+        await replaceOutgoingTrack("video", null);
+      } else {
+        state.audioOnly = false;
+        const stream = await navigator.mediaDevices.getUserMedia({ video: applyMediaConstraints().video, audio: false });
+        state.cameraTrack = stream.getVideoTracks()[0];
+        if (state.cameraTrack && state.localStream) state.localStream.addTrack(state.cameraTrack);
+        state.cameraEnabled = true;
+        await replaceOutgoingTrack("video", state.cameraTrack);
+      }
+      sendStatus();
+      renderVideoGrid();
+    }
+
+    async function toggleAudioOnly() {
+      state.audioOnly = !state.audioOnly;
+      if (state.audioOnly && state.cameraEnabled) await toggleCamera();
+      showToast(state.audioOnly ? "Audio-only mode on." : "Audio-only mode off.");
+      renderVideoGrid();
+    }
+
+    async function startScreenShare() {
+      if (!state.config.enableScreenShare || !navigator.mediaDevices?.getDisplayMedia) return;
+      try {
+        const stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+        state.screenTrack = stream.getVideoTracks()[0];
+        state.screenSharing = true;
+        await replaceOutgoingTrack("video", state.screenTrack);
+        state.screenTrack.addEventListener("ended", stopScreenShare);
+        sendStatus();
+        renderVideoGrid();
+      } catch (error) {
+        logWarning(`Screen share failed: ${error.message}`);
+      }
+    }
+
+    async function stopScreenShare() {
+      if (state.screenTrack) state.screenTrack.stop();
+      state.screenTrack = null;
+      state.screenSharing = false;
+      const replacement = state.cameraEnabled ? state.cameraTrack : null;
+      await replaceOutgoingTrack("video", replacement);
+      sendStatus();
+      renderVideoGrid();
+    }
+
+    function removeLocalVideoTracks() {
+      if (!state.localStream) return;
+      state.localStream.getVideoTracks().forEach((track) => {
+        state.localStream.removeTrack(track);
+        track.stop();
+      });
+      state.cameraTrack = null;
+    }
+
+    function sendStatus() {
+      sendSignal({ type: "participant-status", from: state.participantId, status: currentStatus() });
+      const local = state.participants.get(state.participantId) || {};
+      state.participants.set(state.participantId, { ...local, participantId: state.participantId, displayName: state.displayName, ...currentStatus() });
+      updateParticipantList();
+    }
+
+    function currentStatus() {
+      return {
+        micEnabled: Boolean(state.localStream?.getAudioTracks()[0]?.enabled),
+        cameraEnabled: Boolean(state.cameraEnabled),
+        screenSharing: Boolean(state.screenSharing)
+      };
+    }
+
+    function sendChatMessage() {
+      if (!state.config.enableChat) return showToast("Chat is disabled in config.");
+      const text = $("chatInput").value.trim();
+      if (!text) return;
+      if (sendSignal({ type: "chat", from: state.participantId, text })) $("chatInput").value = "";
+    }
+
+    function addChatMessage(from, text, sentAt = new Date().toISOString()) {
+      const entry = { from, text, sentAt };
+      state.chat.push(entry);
+      if (state.chat.length > 300) state.chat.shift();
+      renderChat();
+    }
+
+    function renderChat() {
+      const log = $("chatLog");
+      log.innerHTML = "";
+      state.chat.forEach((entry) => {
+        const div = document.createElement("div");
+        div.className = entry.from === "system" ? "chat-line system" : "chat-line";
+        const who = entry.from === "system" ? "System" : participantName(entry.from);
+        div.innerHTML = `<span class="who"></span> <span class="text"></span> <span class="small"></span>`;
+        div.querySelector(".who").textContent = `${who}:`;
+        div.querySelector(".text").textContent = entry.text;
+        div.querySelector(".small").textContent = new Date(entry.sentAt).toLocaleTimeString();
+        log.append(div);
+      });
+      log.scrollTop = log.scrollHeight;
+    }
+
+    async function copyChat() {
+      const text = state.chat.map((entry) => `[${entry.sentAt}] ${entry.from === "system" ? "System" : participantName(entry.from)}: ${entry.text}`).join("\n");
+      await navigator.clipboard.writeText(text);
+      showToast("Chat copied.");
+    }
+
+    function updateParticipantList() {
+      const containers = [$("joinParticipants")];
+      for (const container of containers) {
+        container.innerHTML = "";
+        [...state.participants.values()].forEach((participant) => container.append(participantRow(participant)));
+      }
+      const count = state.participants.size;
+      if (count >= state.config.warnWhenRoomSizeExceeds) showToast(`Room has ${count} participants. Mesh video may get heavy.`);
+      if (count >= state.config.autoDisableVideoAt && state.cameraEnabled) {
+        showToast("Room is large for mesh. Consider audio-only mode.");
+      }
+      renderChat();
+      updateStatus();
+    }
+
+    function participantRow(participant) {
+      const row = document.createElement("div");
+      row.className = "participant-row";
+      row.innerHTML = `<span></span><span class="badges"></span>`;
+      row.querySelector("span").textContent = participant.displayName || participant.participantId;
+      row.querySelector(".badges").innerHTML = badgesHtml(participant);
+      return row;
+    }
+
+    function renderVideoGrid() {
+      const grid = $("videoGrid");
+      grid.className = `video-grid${state.compact ? " compact" : ""}`;
+      grid.innerHTML = "";
+      grid.append(createVideoTile({
+        participantId: state.participantId,
+        displayName: `${state.displayName || "You"} (you)`,
+        stream: state.localStream,
+        muted: true,
+        local: true,
+        ...currentStatus()
+      }));
+      for (const [id, participant] of state.participants.entries()) {
+        if (id === state.participantId) continue;
+        grid.append(createVideoTile({
+          ...participant,
+          stream: state.remoteStreams.get(id),
+          muted: false,
+          local: false
+        }));
+      }
+      $("muteBtn").textContent = state.audioEnabled ? "Mute microphone" : "Unmute microphone";
+      $("cameraBtn").textContent = state.cameraEnabled ? "Camera off" : "Camera on";
+      $("audioOnlyBtn").textContent = state.audioOnly ? "Disable audio-only" : "Audio-only mode";
+      $("compactBtn").textContent = state.compact ? "Comfort layout" : "Compact layout";
+      $("stopShareBtn").disabled = !state.screenSharing;
+      $("shareBtn").disabled = !state.config.enableScreenShare || state.screenSharing;
+    }
+
+    function createVideoTile(participant) {
+      const tile = document.createElement("div");
+      tile.className = "tile";
+      const hasVideo = participant.stream?.getVideoTracks().length;
+      const media = document.createElement(hasVideo ? "video" : "audio");
+      media.autoplay = true;
+      media.playsInline = true;
+      media.muted = participant.muted;
+      if (participant.stream) media.srcObject = participant.stream;
+      tile.append(media);
+      if (!hasVideo) {
+        const fill = document.createElement("div");
+        fill.style.cssText = "height:100%;display:grid;place-items:center;font-size:3rem;color:var(--muted)";
+        fill.textContent = "☎";
+        tile.prepend(fill);
+      }
+      const meta = document.createElement("div");
+      meta.className = "meta";
+      meta.innerHTML = `<span class="name"></span><span class="badges"></span>`;
+      meta.querySelector(".name").textContent = participant.displayName || participant.participantId;
+      meta.querySelector(".badges").innerHTML = badgesHtml(participant) + qualityHtml(participant.participantId);
+      tile.append(meta);
+      return tile;
+    }
+
+    function badgesHtml(participant) {
+      const mic = participant.micEnabled ? "mic on" : "mic off";
+      const cam = participant.cameraEnabled ? "cam on" : "cam off";
+      const share = participant.screenSharing ? '<span class="badge">screen</span>' : "";
+      return `<span class="badge">${mic}</span><span class="badge">${cam}</span>${share}`;
+    }
+
+    function qualityHtml(participantId) {
+      if (participantId === state.participantId) return "";
+      const pc = state.peerConnections.get(participantId);
+      const level = pc?.connectionState === "connected" ? 3 : pc?.iceConnectionState === "checking" ? 1 : 0;
+      return `<span class="meter" title="connection quality"><span class="bar ${level > 0 ? "on" : ""}"></span><span class="bar ${level > 1 ? "on" : ""}"></span><span class="bar ${level > 2 ? "on" : ""}"></span></span>`;
+    }
+
+    function updateStatus() {
+      const dot = $("signalStatus").querySelector(".dot");
+      const text = $("signalStatus").querySelector("span:last-child");
+      dot.className = `dot ${state.wsStatus === "connected" ? "ok" : state.wsStatus === "connecting" ? "warn" : ""}`;
+      text.textContent = state.wsStatus === "connected" ? "Signaling connected" : state.wsStatus === "connecting" ? "Connecting" : "Not connected";
+      $("roomTitle").textContent = state.roomId ? `Room: ${state.roomId}` : "No room joined";
+      $("roomSubtitle").textContent = state.roomId ? `${state.participants.size || 1} participant(s), ${state.peerConnections.size} peer connection(s)` : "Join a room to start.";
+    }
+
+    function updateDebug() {
+      const peers = [...state.peerConnections.entries()].map(([id, pc]) => ({
+        id,
+        signalingState: pc.signalingState,
+        iceGatheringState: pc.iceGatheringState,
+        iceConnectionState: pc.iceConnectionState,
+        connectionState: pc.connectionState,
+        stats: state.stats[id] || {}
+      }));
+      $("debugSummary").innerHTML = `
+        <strong>WebSocket:</strong> ${state.wsStatus}<br>
+        <strong>Room:</strong> ${state.roomId || "(none)"}<br>
+        <strong>Participant ID:</strong> ${state.participantId}<br>
+        <strong>Participants:</strong> ${[...state.participants.keys()].join(", ") || "(none)"}<br>
+        <strong>Peer connections:</strong> ${state.peerConnections.size}<br>
+        <strong>Local tracks:</strong> ${trackSummary(state.localStream)}<br>
+        <strong>Remote tracks:</strong> ${[...state.remoteStreams.values()].map(trackSummary).join(" | ") || "(none)"}
+      `;
+      const log = $("debugLog");
+      log.innerHTML = "";
+      [{ peers }, ...state.warnings.slice(-100), ...state.events.slice(-100)].slice(-220).reverse().forEach((entry) => {
+        const pre = document.createElement("pre");
+        pre.textContent = JSON.stringify(entry, null, 2);
+        log.append(pre);
+      });
+    }
+
+    async function updatePeerStats() {
+      for (const [id, pc] of state.peerConnections.entries()) {
+        try {
+          const report = await pc.getStats();
+          const summary = { selectedCandidatePair: null, turnLikely: false };
+          report.forEach((stat) => {
+            if (stat.type === "candidate-pair" && stat.state === "succeeded" && stat.nominated) {
+              summary.selectedCandidatePair = stat.id;
+              const local = report.get(stat.localCandidateId);
+              const remote = report.get(stat.remoteCandidateId);
+              summary.localCandidateType = local?.candidateType;
+              summary.remoteCandidateType = remote?.candidateType;
+              summary.turnLikely = local?.candidateType === "relay" || remote?.candidateType === "relay";
+            }
+          });
+          state.stats[id] = summary;
+        } catch (error) {
+          logWarning(`Stats failed for ${id}: ${error.message}`);
+        }
+      }
+      updateDebug();
+    }
+
+    function handleParticipantLeft(participantId) {
+      const name = participantName(participantId);
+      closePeerConnection(participantId);
+      state.participants.delete(participantId);
+      addChatMessage("system", `${name} left.`);
+      updateParticipantList();
+      renderVideoGrid();
+    }
+
+    function participantName(id) {
+      if (id === state.participantId) return state.displayName || "You";
+      return state.participants.get(id)?.displayName || id || "Unknown";
+    }
+
+    function updateInviteUrl() {
+      const room = sanitizeRoom($("roomName").value.trim());
+      const name = $("displayName").value.trim();
+      const url = new URL(location.href);
+      if (room) url.searchParams.set("room", room); else url.searchParams.delete("room");
+      if (name) url.searchParams.set("name", name); else url.searchParams.delete("name");
+      history.replaceState(null, "", url);
+    }
+
+    async function copyInviteLink() {
+      updateInviteUrl();
+      await navigator.clipboard.writeText(location.href);
+      showToast("Invite link copied.");
+    }
+
+    function addTurnServer() {
+      const urls = $("turnUrl").value.trim();
+      if (!urls) return;
+      const turn = { urls };
+      if ($("turnUsername").value) turn.username = $("turnUsername").value;
+      if ($("turnCredential").value) turn.credential = $("turnCredential").value;
+      const ice = JSON.parse($("cfgIce").value || "[]");
+      const withoutTurn = ice.filter((server) => !String(Array.isArray(server.urls) ? server.urls[0] : server.urls).startsWith("turn"));
+      withoutTurn.push(turn);
+      $("cfgIce").value = JSON.stringify(withoutTurn, null, 2);
+      showToast("TURN server added to ICE config. Save config to keep it.");
+    }
+
+    function clearTurnServer() {
+      const ice = JSON.parse($("cfgIce").value || "[]");
+      $("cfgIce").value = JSON.stringify(ice.filter((server) => !String(Array.isArray(server.urls) ? server.urls[0] : server.urls).startsWith("turn")), null, 2);
+      $("turnUrl").value = "";
+      $("turnUsername").value = "";
+      $("turnCredential").value = "";
+      showToast("TURN entries cleared from editor. Save config to keep it.");
+    }
+
+    function logDebugEvent(kind, data = {}) {
+      if (!state.config.enableDebug && !["signal-in", "signal-out"].includes(kind)) return;
+      state.events.push({ t: new Date().toISOString(), kind, data });
+      if (state.events.length > 100) state.events.shift();
+      updateDebug();
+    }
+
+    function logWarning(message) {
+      state.warnings.push({ t: new Date().toISOString(), warning: message });
+      if (state.warnings.length > 100) state.warnings.shift();
+      updateDebug();
+    }
+
+    function downloadDebugLog() {
+      downloadJson("browser-party-line-debug.json", {
+        roomId: state.roomId,
+        participantId: state.participantId,
+        participants: [...state.participants.values()],
+        peers: [...state.peerConnections.keys()],
+        events: state.events,
+        warnings: state.warnings,
+        stats: state.stats
+      });
+    }
+
+    function downloadJson(filename, data) {
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      link.click();
+      URL.revokeObjectURL(url);
+    }
+
+    function showToast(message) {
+      const toast = document.createElement("div");
+      toast.className = "toast";
+      toast.textContent = message;
+      $("toasts").append(toast);
+      setTimeout(() => toast.remove(), 4200);
+    }
+
+    function trackSummary(stream) {
+      if (!stream) return "(none)";
+      return stream.getTracks().map((track) => `${track.kind}:${track.readyState}:${track.enabled ? "enabled" : "disabled"}`).join(", ") || "(none)";
+    }
+
+    function scrubSignal(message) {
+      const copy = { ...message };
+      if (copy.sdp?.sdp) copy.sdp = { type: copy.sdp.type, sdp: `[${copy.sdp.sdp.length} chars]` };
+      if (copy.candidate?.candidate) copy.candidate = { ...copy.candidate, candidate: "[candidate]" };
+      return copy;
+    }
+
+    function sanitizeRoom(value) {
+      return value.replace(/[^A-Za-z0-9_-]/g, "-").slice(0, 64);
+    }
+
+    function clampNumber(value, min, max, fallback) {
+      const number = Number(value);
+      if (!Number.isFinite(number)) return fallback;
+      return Math.max(min, Math.min(max, number));
+    }
+
+    function pick(values) {
+      return values[Math.floor(Math.random() * values.length)];
+    }
+
+    initApp();
+  </script>
+</body>
+</html>
