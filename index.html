@@ -523,6 +523,10 @@
         try { state.config = { ...cloneData(DEFAULT_CONFIG), ...JSON.parse(saved) }; }
         catch { logWarning("Could not parse saved config."); }
       }
+      if (!state.config.signalingBase || state.config.signalingBase.includes("YOUR_SUBDOMAIN")) {
+        state.config.signalingBase = DEFAULT_CONFIG.signalingBase;
+        saveConfig();
+      }
       if (localStorage.getItem("bpl-theme") === "light") document.body.classList.add("light");
       $("themeToggle").textContent = document.body.classList.contains("light") ? "Dark mode" : "Light mode";
       state.audioOnly = Boolean(state.config.audioOnly);
